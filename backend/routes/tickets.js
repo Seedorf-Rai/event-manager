@@ -22,7 +22,7 @@ router.post('/generate', protect, async (req, res) => {
     if (existingTicket) return res.status(400).json({ message: 'You already have a ticket for this event', ticket: existingTicket });
 
     const ticketId = `TKT-${uuidv4().split('-')[0].toUpperCase()}-${Date.now()}`;
-    const qrPayload = `${process.env.CLIENT_URL}verify/${ticketId}`;
+    const qrPayload = `${process.env.CLIENT_URL}/verify/${ticketId}`;
     const qrCodeImage = await QRCode.toDataURL(qrPayload, { width: 300, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } });
 
     const ticket = await Ticket.create({ ticketId, user: req.user._id, event: eventId, qrCodeData: qrPayload, qrCodeImage });
