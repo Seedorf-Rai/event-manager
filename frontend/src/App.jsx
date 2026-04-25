@@ -10,6 +10,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import CreateEvent from './pages/CreateEvent';
 import ScanVerify from './pages/ScanVerify';
 import Navbar from './components/Navbar';
+import ScannerModal from './components/ScannerModal';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user } = useAuth();
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/create-event" element={<ProtectedRoute adminOnly><CreateEvent /></ProtectedRoute>} />
         <Route path="/admin/scan" element={<ProtectedRoute adminOnly><ScanVerify /></ProtectedRoute>} />
+        <Route path="/verify/:ticketId" element={<ScannerModal></ScannerModal>}></Route>
       </Routes>
     </div>
   );

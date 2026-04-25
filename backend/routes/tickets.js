@@ -6,7 +6,10 @@ const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
 const User = require('../models/User');
 const { protect, adminOnly } = require('../middleware/auth');
+const dotenv=require('dotenv')
 
+
+dotenv.config();
 router.post('/generate', protect, async (req, res) => {
   try {
     const { eventId } = req.body;
@@ -19,7 +22,7 @@ router.post('/generate', protect, async (req, res) => {
     if (existingTicket) return res.status(400).json({ message: 'You already have a ticket for this event', ticket: existingTicket });
 
     const ticketId = `TKT-${uuidv4().split('-')[0].toUpperCase()}-${Date.now()}`;
-    const qrPayload = JSON.stringify({ ticketId, userId: req.user._id, eventId, timestamp: Date.now() });
+    const qrPayload = `${process.env.CLIENT_URL}verify/${ticketId}`;
     const qrCodeImage = await QRCode.toDataURL(qrPayload, { width: 300, margin: 2, color: { dark: '#0f172a', light: '#ffffff' } });
 
     const ticket = await Ticket.create({ ticketId, user: req.user._id, event: eventId, qrCodeData: qrPayload, qrCodeImage });
@@ -84,6 +87,25 @@ router.get('/all', protect, adminOnly, async (req, res) => {
   try {
     const tickets = await Ticket.find().populate('user', 'name email registrationNo photo').populate('event', 'name venue date').sort({ createdAt: -1 });
     res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+router.get('/:ticketId', async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+
+    const ticket = await Ticket.findOne({ ticketId })
+      .populate('user', 'name email registrationNo photo')
+      .populate('event', 'name venue date thumbnail');
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
